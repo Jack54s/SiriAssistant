@@ -1,0 +1,7 @@
+.vs
+.nuget
+*.user
+
+bin/*
+obj/*
+packages
