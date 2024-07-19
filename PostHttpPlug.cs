@@ -76,7 +76,7 @@ namespace SiriAssistant
                                 {
                                     using (Process process = Process.Start(startInfo))
                                     {
-                                        logger.Info($"执行程序文件：{action.path}...");
+                                        logger.Info($"执行程序文件：{action.path} {action.opts}...");
                                     }
                                 }
                                 catch (Exception ex)
