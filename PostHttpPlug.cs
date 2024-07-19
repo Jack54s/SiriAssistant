@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -20,7 +21,20 @@ namespace SiriAssistant
         }
         private KeyCode GetKeyCode(char c)
         {
+            string exMsg = "HotKey只允许字母数字空格和下列符号/#^+!=<>[]，分别代表回车,Win,Ctrl,Shift,Alt,媒体键PlayPause,PrevTrack,NextTrack,VolumeUp,VolumeDown";
             KeyCode key;
+            Dictionary<char, KeyCode> keyMap = new Dictionary<char, KeyCode>();
+            keyMap.Add(' ', KeyCode.Space);
+            keyMap.Add('/', KeyCode.Enter);
+            keyMap.Add('#', KeyCode.LWin);
+            keyMap.Add('^', KeyCode.Control);
+            keyMap.Add('+', KeyCode.Shift);
+            keyMap.Add('!', KeyCode.Alt);
+            keyMap.Add('=', KeyCode.MediaPlayPause);
+            keyMap.Add('<', KeyCode.MediaPreviousTrack);
+            keyMap.Add('>', KeyCode.MediaNextTrack);
+            keyMap.Add('[', KeyCode.VolumeUp);
+            keyMap.Add(']', KeyCode.VolumeDown);
             if ((c >= 0x41 && c <= 0x5A) || (c >= 0x30 && c <= 0x39))
             {
                 bool r = Enum.TryParse<KeyCode>(c.ToString(), out key);
@@ -30,28 +44,16 @@ namespace SiriAssistant
                 }
                 else
                 {
-                    throw new Exception("HotKey只允许字母数字和#^+!，分别代表Win,Ctrl,Shift,Alt");
+                    throw new Exception(exMsg);
                 }
             }
-            else if (c == '#')
+            else if (keyMap.ContainsKey(c))
             {
-                return KeyCode.LWin;
-            }
-            else if (c == '^')
-            {
-                return KeyCode.Control;
-            }
-            else if (c == '+')
-            {
-                return KeyCode.Shift;
-            }
-            else if (c == '!')
-            {
-                return KeyCode.Alt;
+                return keyMap.GetValue(c);
             }
             else
             {
-                throw new Exception("HotKey只允许字母数字和#^+!，分别代表Win,Ctrl,Shift,Alt");
+                throw new Exception(exMsg);
             }
         }
 
@@ -69,9 +71,7 @@ namespace SiriAssistant
                         switch (action.type)
                         {
                             case ActionType.PROGRAM:
-                                ProcessStartInfo startInfo = new ProcessStartInfo();
-                                startInfo.FileName = action.path;
-                                startInfo.Arguments = action.opts;
+                                ProcessStartInfo startInfo = new ProcessStartInfo(action.path, action.opts);
                                 try
                                 {
                                     using (Process process = Process.Start(startInfo))
@@ -95,35 +95,47 @@ namespace SiriAssistant
                                     var l = action.path.Length;
                                     action.path = action.path.ToUpper();
                                     KeyCode[] keyCodes = new KeyCode[l];
+                                    int cc = 1;
                                     for (int i = 0; i < l; i++)
                                     {
                                         keyCodes[i] = GetKeyCode(action.path[i]);
                                     }
-                                    await Simulate.Events()
-                                        .ClickChord(keyCodes)
-                                        .Invoke();
+                                    if (int.TryParse(action.opts, out var count))
+                                    {
+                                        cc = count;
+                                    }
+                                    var eventBuilder = Simulate.Events();
+                                    for (int i = 0; i < cc; i++)
+                                    {
+                                        eventBuilder.ClickChord(keyCodes).Wait(100);
+                                    }
+                                    await eventBuilder.Invoke();
                                     string hotKeyName = "";
+                                    Dictionary<char, string> keyMap = new Dictionary<char, string>();
+                                    keyMap.Add(' ', "Space");
+                                    keyMap.Add('/', "Enter");
+                                    keyMap.Add('#', "Win");
+                                    keyMap.Add('^', "Ctrl");
+                                    keyMap.Add('+', "Shift");
+                                    keyMap.Add('!', "Alt");
+                                    keyMap.Add('=', "MediaPlayPause");
+                                    keyMap.Add('<', "MediaPreviousTrack");
+                                    keyMap.Add('>', "MediaNextTrack");
+                                    keyMap.Add('[', "VolumeUp");
+                                    keyMap.Add(']', "VolumeDown");
                                     foreach (char c in action.path)
                                     {
-                                        if (c == '^')
+                                        if (keyMap.ContainsKey(c))
                                         {
-                                            hotKeyName += "Ctrl";
-                                        } else if (c == '+')
-                                        {
-                                            hotKeyName += "Shift";
-                                        } else if (c == '!')
-                                        {
-                                            hotKeyName += "Alt";
-                                        } else if (c == '#')
-                                        {
-                                            hotKeyName += "Win";
+                                            hotKeyName += keyMap.GetValue(c);
                                         } else
                                         {
                                             hotKeyName += c;
                                         }
                                         hotKeyName += "+";
                                     }
-                                    logger.Info($"执行热键：{hotKeyName.Substring(0, hotKeyName.Length - 1)}");
+                                    string ccStr = cc == 1 ? "" : cc + "x ";
+                                    logger.Info($"执行热键：{ccStr}{hotKeyName.Substring(0, hotKeyName.Length - 1)}");
                                 }
                                 catch (Exception ex)
                                 {
