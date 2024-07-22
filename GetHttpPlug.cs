@@ -48,7 +48,7 @@ namespace SiriAssistant
 <body>
     <div class=""info-box"">
         <p>
-          使用ShortCuts中的GetContentOfUrl发送Post请求，请求体格式为JSON，键名有type，path，opts。
+          使用ShortCuts中的GetContentOfUrl向主机发送Post请求，请求体格式为JSON，键名有type，path，opts。
         </p>
         <p>
           参数说明：
@@ -93,12 +93,6 @@ namespace SiriAssistant
 ";
                     e.Context.Response.SetStatus().SetContentTypeByExtension(".html").SetContent(helpStr).Answer();
                     logger.Info("Return help.html");
-                    return;
-                }
-                else
-                {
-                    e.Context.Response.FromText("Hello world").Answer();
-                    logger.Info("Hello world");
                     return;
                 }
             }

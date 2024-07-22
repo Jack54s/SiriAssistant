@@ -23,18 +23,20 @@ namespace SiriAssistant
         {
             string exMsg = "HotKey只允许字母数字空格和下列符号/#^+!=<>[]，分别代表回车,Win,Ctrl,Shift,Alt,媒体键PlayPause,PrevTrack,NextTrack,VolumeUp,VolumeDown";
             KeyCode key;
-            Dictionary<char, KeyCode> keyMap = new Dictionary<char, KeyCode>();
-            keyMap.Add(' ', KeyCode.Space);
-            keyMap.Add('/', KeyCode.Enter);
-            keyMap.Add('#', KeyCode.LWin);
-            keyMap.Add('^', KeyCode.Control);
-            keyMap.Add('+', KeyCode.Shift);
-            keyMap.Add('!', KeyCode.Alt);
-            keyMap.Add('=', KeyCode.MediaPlayPause);
-            keyMap.Add('<', KeyCode.MediaPreviousTrack);
-            keyMap.Add('>', KeyCode.MediaNextTrack);
-            keyMap.Add('[', KeyCode.VolumeUp);
-            keyMap.Add(']', KeyCode.VolumeDown);
+            Dictionary<char, KeyCode> keyMap = new Dictionary<char, KeyCode>
+            {
+                { ' ', KeyCode.Space },
+                { '/', KeyCode.Enter },
+                { '#', KeyCode.LWin },
+                { '^', KeyCode.Control },
+                { '+', KeyCode.Shift },
+                { '!', KeyCode.Alt },
+                { '=', KeyCode.MediaPlayPause },
+                { '<', KeyCode.MediaPreviousTrack },
+                { '>', KeyCode.MediaNextTrack },
+                { '[', KeyCode.VolumeUp },
+                { ']', KeyCode.VolumeDown }
+            };
             if ((c >= 0x41 && c <= 0x5A) || (c >= 0x30 && c <= 0x39))
             {
                 bool r = Enum.TryParse<KeyCode>(c.ToString(), out key);
@@ -105,24 +107,26 @@ namespace SiriAssistant
                                         cc = count;
                                     }
                                     var eventBuilder = Simulate.Events();
-                                    for (int i = 0; i < cc; i++)
+                                    for (int i = 0; i < cc - 1; i++)
                                     {
                                         eventBuilder.ClickChord(keyCodes).Wait(100);
                                     }
-                                    await eventBuilder.Invoke();
+                                    await eventBuilder.ClickChord(keyCodes).Invoke();
                                     string hotKeyName = "";
-                                    Dictionary<char, string> keyMap = new Dictionary<char, string>();
-                                    keyMap.Add(' ', "Space");
-                                    keyMap.Add('/', "Enter");
-                                    keyMap.Add('#', "Win");
-                                    keyMap.Add('^', "Ctrl");
-                                    keyMap.Add('+', "Shift");
-                                    keyMap.Add('!', "Alt");
-                                    keyMap.Add('=', "MediaPlayPause");
-                                    keyMap.Add('<', "MediaPreviousTrack");
-                                    keyMap.Add('>', "MediaNextTrack");
-                                    keyMap.Add('[', "VolumeUp");
-                                    keyMap.Add(']', "VolumeDown");
+                                    Dictionary<char, string> keyMap = new Dictionary<char, string>
+                                    {
+                                        { ' ', "Space" },
+                                        { '/', "Enter" },
+                                        { '#', "Win" },
+                                        { '^', "Ctrl" },
+                                        { '+', "Shift" },
+                                        { '!', "Alt" },
+                                        { '=', "MediaPlayPause" },
+                                        { '<', "MediaPreviousTrack" },
+                                        { '>', "MediaNextTrack" },
+                                        { '[', "VolumeUp" },
+                                        { ']', "VolumeDown" }
+                                    };
                                     foreach (char c in action.path)
                                     {
                                         if (keyMap.ContainsKey(c))
